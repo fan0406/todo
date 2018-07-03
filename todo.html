@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>todo</title>
+        <link rel="stylesheet" href="todo.css">
+        <style>
+            .done {
+                color: #ff8494;;
+                text-decoration: line-through;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="todo-body">
+            <div class="todo-h1">
+                <p>My Todos</p>
+            </div>
+            <div class="todo-form">
+                <input id="id-input-todo" type="text" >
+                <button id="id-button-add" type="button" >+</button>
+            </div>
+
+            <div id="id-div-container">
+                <!-- <div class="todo-cell">
+                    <button class="todo-done">完成</button>
+                    <button class="todo-delete">删除</button>
+                    <span contenteditable="true">上课</span>
+                </div> -->
+            </div>
+        </div>
+
+
+        <script>
+            var log = console.log.bind(console)
+
+            var e = function(selector) {
+                var element = document.querySelector(selector)
+                return element
+            }
+
+            // 给 add button 绑定添加 todo 事件
+            var addButton = e('#id-button-add')
+            addButton.addEventListener('click', function() {
+                var todoInput = e('#id-input-todo')
+                var todo = todoInput.value
+                saveTodo(todo)
+                var todoContainer = e('#id-div-container')
+                var html = templateTodo(todo)
+                todoContainer.insertAdjacentHTML('beforeend', html)
+            })
+
+            // 用一个 todo 参数返回一个 todo cell 的 HTML 字符串
+            var templateTodo = function(todo) {
+                var t = `
+                    <div class="todo-cell">
+                        <button class="todo-done">√</button>
+                        <button class="todo-delete">×</button>
+                        <span class='todo-span'contenteditable="true">${todo}</span>
+                    </div>
+                `
+                return t
+            }
+
+            // 拿到所有存储在 localStorage 里面的 todo
+            var loadTodos = function() {
+                var s = localStorage.savedTodos
+                // 第一次打开的时候, 还没有存储这个数据, s 是 undefined
+                if (s == undefined) {
+                    return []
+                } else {
+                    var ts = JSON.parse(s)
+                    return ts
+                }
+            }
+
+            // 把所有的 todo 插入到页面中
+            var insertTodos = function(todos) {
+                // 添加到 container 中
+                var todoContainer = e('#id-div-container')
+                for (var i = 0; i < todos.length; i++) {
+                    var todo = todos[i]
+                    var html = templateTodo(todo)
+                    todoContainer.insertAdjacentHTML('beforeend', html)
+                }
+            }
+
+            // 把一个 todo 参数添加到todos中，并且保存到 localStorage 中
+            var saveTodo = function(todo) {
+                todos.push(todo)
+                var s = JSON.stringify(todos)
+                localStorage.savedTodos = s
+            }
+
+            var deleteTodo = function(container, todoCell) {
+                // 1. 找到这个 todo 在 container 里面的下标
+                var children = container.children
+                for (var i = 0; i < children.length; i++) {
+                    var cell = children[i]
+                    if (cell == todoCell) {
+                        log('删除 cell, 找到下标', i)
+                        // 1. 删除当前页面的这个 cell dom，负责刷新才能生效
+                        todoCell.remove()
+                        // 2. 同时删除保存在 localStorage 里面的对应下标的数据，负责刷新就恢复原样了
+                        var todos = loadTodos()
+                        // 删除数组中的指定下标的元素
+                        // splice 函数可以删除数组的某个下标,
+                        // 第一个参数是要删除的元素的下标
+                        // 第二个参数是要删除的个数, 只删除一个, 所以这里是 1
+                        todos.splice(i, 1)
+                        // 删除后, 保存到 localStorage
+                        var s = JSON.stringify(todos)
+                        localStorage.savedTodos = s
+                    }
+                }
+            }
+
+            // 页面载入的时候, 把存储的 todos 数据插入到页面中
+            var todos = loadTodos()
+            // 把 todos 显示在页面中
+            insertTodos(todos)
+
+
+            var todoContainer = e('#id-div-container')
+
+            todoContainer.addEventListener('click', function(event) {
+                log('container click', event, event.target)
+                var target = event.target
+                log('target',target)
+                if (target.classList.contains('todo-done')) {
+                    log('done')
+                    // 给 doto div 开关一个状态 class
+                    // parentElement 是找到父元素
+                    var todoDiv = target.parentElement
+                    // toggleClass(todoDiv, 'done')
+                    todoDiv.classList.toggle('done')
+                } else if (target.classList.contains('todo-delete')) {
+                    log('delete')
+                    var todoDiv = target.parentElement
+                    var container = todoDiv.parentElement
+                    deleteTodo(container, todoDiv)
+                }
+            })
+
+            var __main = function() {
+
+            }
+        </script>
+    </body>
+</html>
